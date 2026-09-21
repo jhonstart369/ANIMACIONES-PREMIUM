@@ -2354,7 +2354,7 @@ body.waiting .btn-volver-esp32 {
     <div class="hint-sub">para entrar al jardín</div>
   </div>
 
-  <!-- Audio oculto (musica.mp3 en el mismo repo de GitHub Pages) -->
+  <!-- Audio oculto (flores-amarillas.mp3 en el mismo repo de GitHub Pages) -->
   <audio id="bg-music" loop preload="auto">
     <source src="flores-amarillas.mp3" type="audio/mpeg">
   </audio>
@@ -2631,47 +2631,59 @@ body.waiting .btn-volver-esp32 {
     // (así evitamos el bloqueo de autoplay de los navegadores)
 
     function revealGardenAndPlay() {
-      const welcome = document.getElementById("welcome");
-      const music = document.getElementById("bg-music");
+      var welcome = document.getElementById("welcome");
+      var music = document.getElementById("bg-music");
 
-      // Iniciar música (ahora está permitido porque hay gesto del usuario)
+      // Evitar doble clic
+      if (document.body.classList.contains("started")) return;
+      document.body.classList.add("started");
+
+      // Iniciar música (gesto del usuario = permitido por el navegador)
       if (music) {
         music.volume = 0;
-        const playPromise = music.play();
+        var playPromise = music.play();
         if (playPromise !== undefined) {
-          playPromise.then(() => {
-            // Fade-in suave del volumen
-            let v = 0;
-            const fade = setInterval(() => {
-              v += 0.04;
-              if (v >= 0.55) {
-                music.volume = 0.55;
+          playPromise.then(function() {
+            var v = 0;
+            var fade = setInterval(function() {
+              v += 0.05;
+              if (v >= 0.6) {
+                music.volume = 0.6;
                 clearInterval(fade);
               } else {
                 music.volume = v;
               }
-            }, 80);
-          }).catch(err => {
-            console.warn("No se pudo reproducir el audio:", err);
+            }, 70);
+          }).catch(function(err) {
+            console.warn("Audio no reproducido:", err);
           });
         }
       }
 
-      // Ocultar pantalla de bienvenida
+      // Ocultar bienvenida
       if (welcome) {
         welcome.classList.add("hidden");
       }
 
-      // Quitar estados de espera y activar animaciones del jardín
+      // Activar jardín
       document.body.classList.remove("waiting");
       document.body.classList.remove("container");
     }
 
-    // Botón corazón
-    document.addEventListener("DOMContentLoaded", () => {
-      const btn = document.getElementById("start-btn");
+    // Botón corazón – inicia música + revela el jardín
+    document.addEventListener("DOMContentLoaded", function() {
+      var btn = document.getElementById("start-btn");
       if (btn) {
         btn.addEventListener("click", revealGardenAndPlay);
+        // También permitir tocar en toda la pantalla de bienvenida
+        var welcome = document.getElementById("welcome");
+        if (welcome) {
+          welcome.addEventListener("click", function(e) {
+            if (e.target.closest(".heart-btn") || e.target === welcome) {
+              revealGardenAndPlay();
+            }
+          });
+        }
       }
     });
 
